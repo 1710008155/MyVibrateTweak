@@ -5,7 +5,7 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -14,9 +14,15 @@ jobs:
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
+      # 👇👇👇 重点是这一步：下载 iOS SDK 👇👇👇
+      - name: Download iOS SDKs
+        run: |
+          git clone --recursive https://github.com/theos/sdks.git ~/theos/sdks
+
       - name: Build
         run: |
-          make package FINALPACKAGE=1
+          # 强制指定使用 iOS 14.5 SDK 进行编译，防止兼容性报错
+          make package FINALPACKAGE=1 SDKVERSION=14.5
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
